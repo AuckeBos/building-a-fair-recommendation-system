@@ -1,0 +1,44 @@
+# Python package
+# Create and test a Python package on multiple Python versions.
+# Add steps that analyze code, save the dist with the build record, publish to a PyPI-compatible index, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/python
+
+trigger:
+- master
+
+pool:
+  vmImage: 'windows-latest'
+variables:
+  buildConfiguration: 'Release'
+  solutionFile: '**/*.sln'
+  projectKey: bafrs:BAFRS
+  projectName: Building a fair recommendation system
+steps:
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: '3.8'
+  displayName: 'Use Python 3.8'
+- script: |
+    python -m pip install --upgrade pip
+    pip install numpy
+  displayName: 'Install pip'
+
+- task: SonarQubePrepare@4
+  inputs:
+    SonarQube: 'SonarQube'
+    scannerMode: 'CLI'
+    configMode: 'manual'
+    cliProjectKey: '$(projectKey)'
+    cliProjectName: '$(projectName)'
+    cliSources: './banditmf'
+- task: SonarQubeAnalyze@4
+  displayName: Analyze with SonarQube
+
+- task: SonarQubePublish@4
+  displayName: Publish with SonarQube
+  inputs:
+    pollingTimeoutSec: '300'
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: '3.8'
+  displayName: 'Use Python 3.8'
